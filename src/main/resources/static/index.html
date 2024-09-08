@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Metro Ticket Booking</title>
+</head>
+<body>
+<h1>Metro Ticket Booking</h1>
+<form id="buyTicketForm">
+    <label for="startStation">Start Station:</label>
+    <select id="startStation"></select><br>
+
+    <label for="endStation">End Station:</label>
+    <select id="endStation"></select><br>
+
+    <button type="submit">Buy Ticket</button>
+</form>
+
+<div id="ticketDetails" style="display:none; margin-top:20px;">
+    <h2>Ticket Details</h2>
+    <p><strong>Ticket ID:</strong> <span id="ticketId"></span></p>
+    <p><strong>Price:</strong> <span id="ticketPrice"></span></p>
+    <p><strong>Created At:</strong> <span id="createdAt"></span></p>
+    <p><strong>Expiry At:</strong> <span id="expiresAt"></span></p>
+</div>
+
+<script>
+    function populateStations(stations) {
+        const startStationSelect = document.getElementById('startStation');
+        const endStationSelect = document.getElementById('endStation');
+
+        stations.forEach(station => {
+            const option = document.createElement('option');
+            option.value = station.name;
+            option.text = station.name;
+
+            startStationSelect.add(option.cloneNode(true));
+            endStationSelect.add(option);
+        });
+    }
+
+    fetch('http://localhost:8080/api/station')
+        .then(response => response.json())
+        .then(data => populateStations(data))
+        .catch(error => console.error('Error:', error));
+
+    document.getElementById('buyTicketForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const startStation = document.getElementById('startStation').value;
+        const endStation = document.getElementById('endStation').value;
+
+        fetch(`http://localhost:8080/api/tickets/buy?startStation=${startStation}&endStation=${endStation}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('ticketId').innerText = data.ticketId;
+            document.getElementById('ticketPrice').innerText = data.price;
+            document.getElementById('createdAt').innerText = data.createdAt;
+            document.getElementById('expiresAt').innerText = data.expiresAt;
+
+            document.getElementById('ticketDetails').style.display = 'block';
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+</body>
+</html>
